@@ -239,6 +239,21 @@ async function gas(email, password, index) {
         accountList.shift();
         return fs.writeFileSync(empassPath, accountList.join("\n"), "utf-8");
     }
+    
+    const writeSuccess = (accounts) => {
+        const empassPath = "./success-empass.txt";
+        return fs.writeFileSync(empassPath, accounts.join("\n"), "utf-8");
+    }
+    
+    const writeFail = (accounts) => {
+        const empassPath = "./fail-empass.txt";
+        return fs.writeFileSync(empassPath, accounts.join("\n"), "utf-8");
+    }
+    
+    const replace = (accounts) => {
+        const empassPath = "./empass.txt";
+        return fs.writeFileSync(empassPath, accounts.join("\n"), "utf-8");
+    }
 
     console.clear();
     log(colors.bgCyan("Coca Cola") + " " + colors.bgBlue("@osyduck"));
@@ -249,9 +264,9 @@ async function gas(email, password, index) {
     let empassS = empass.split("\r\n");
     let numList = empassS.length;
     let thread = 5;
-
+    let result = [];
+ 
     for (let i = 0; i < Math.floor(numList / thread); i++) {
-
         log(`[${date()}] ${colors.yellow(`Processing ${i + 1} of ${Math.floor(numList / thread)} List`)}`);
 
         let spl = empassS.splice(0, thread);
@@ -264,18 +279,39 @@ async function gas(email, password, index) {
             let result = await gas(email, pass, index.toString());
 
             if (result == true) {
-                deleteFirstIndex();
+                return {
+                    success: true,
+                    email,
+                    pass,
+                    empass: item,
+                    index
+                };
             } else {
-                return;
+                return {
+                    success: false,
+                    email,
+                    pass,
+                    empass: item,
+                    index
+                };
             }
 
             log();
         });
 
-        await Promise.all(promises);
-
+        const res = await Promise.all(promises);
+        result.push(...res);
     }
+    
+    const resSuccess = [];
+    const resFail = [];
 
+    result.forEach((r) => {
+        if (r.success) resSuccess.push(r.empass);
+        else resFail.push(r.empass);
+    });
 
-
+    writeSuccess(resSuccess);
+    writeFail(resFail);
+    replace(resFail);
 })()
