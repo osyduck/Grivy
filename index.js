@@ -151,7 +151,7 @@ async function gas(email, password, index) {
             try {
                 await page.click('#mat-dialog-0 > app-cookie-management > div > div.confirm-content > div:nth-child(2) > button > span.mat-button-wrapper');
                 isClicked = true;
-                log("CLICKED")
+                log(`[${date()}] ${colors.green("Button Clicked")}`);
                 await delay(1000);
             } catch (error) {
 
@@ -160,8 +160,6 @@ async function gas(email, password, index) {
 
 
         await page.waitForTimeout(2000);
-        // // await page.waitForNavigation();
-        // await page.click('body > app-root > div > app-campaign > div > div.bottom-box > button');
         await page.waitForSelector('.social-account-label')
         await page.evaluate(() => {
             document.querySelectorAll('.social-account-label')[0].click()
@@ -169,6 +167,8 @@ async function gas(email, password, index) {
 
         const newPagePromise = new Promise(x => browser.once('targetcreated', target => x(target.page())));
         const newPage = await newPagePromise;
+
+        log(`[${date()}] ${colors.green("Gmail Login in Progress...")}`);
 
         await newPage.waitForTimeout(2000);
         await newPage.waitForSelector('input[type=email]', { visible: true });
@@ -206,79 +206,9 @@ async function gas(email, password, index) {
 
         log(`[${date()}] ${colors.green("Logged In Successfully")}`);
 
-        log(bearer);
+        log(`[${date()}] Token: ${bearer}`);
 
         claim(bearer);
-
-
-        // await page.waitForSelector('#mat-dialog-1 > app-permission-dialog > div > div.permission-action > button.mat-focus-indicator.btn-full-width.btn-cancel.mat-raised-button.mat-button-base');
-        // await page.click('#mat-dialog-1 > app-permission-dialog > div > div.permission-action > button.mat-focus-indicator.btn-full-width.btn-cancel.mat-raised-button.mat-button-base');
-
-        // await delay(3000);
-        // //await page.waitForSelector('#mat-dialog-0 > app-cookie-management > div > div.confirm-content > div:nth-child(2) > button > span.mat-button-wrapper', { visible: true, timeout: 15000 });
-        // await page.click('#mat-dialog-0 > app-cookie-management > div > div.confirm-content > div:nth-child(2) > button > span.mat-button-wrapper');
-
-        // await delay(5000);
-        // //await page.waitForSelector('body > app-root > div > app-campaign > div > div.bottom-box > button', { visible: true, timeout: 15000 });
-        // await page.click('body > app-root > div > app-campaign > div > div.bottom-box > button')
-
-        // await delay(5000);
-        // //await page.waitForSelector('body > app-root > div > app-campaign > section > div > div.campaign-footer.ng-star-inserted > button > span.mat-button-wrapper', { visible: true, timeout: 15000 });
-        // await page.click('body > app-root > div > app-campaign > section > div > div.campaign-footer.ng-star-inserted > button > span.mat-button-wrapper');
-
-        // await delay(2000);
-
-        // try {
-        //     await page.click('#mat-dialog-0 > app-redeem-checkbox-dialog > div > div:nth-child(2) > label > span.checkmark');
-        // } catch (error) {
-
-        // }
-
-
-        // log(`[${date()}] Claiming Coupon`)
-
-        // try {
-        //     await page.click('#mat-dialog-0 > app-redeem-checkbox-dialog > div > div:nth-child(3) > button');
-        //     await page.waitForSelector('#mat-dialog-2 > app-bar-code > div > div.mat-dialog-content > app-code > div', { visible: true, timeout: 7000 });
-        // } catch (error) {
-
-        // }
-
-
-
-
-        // try {
-        //     await page.click('#mat-dialog-0 > app-bar-code > div > div.mat-dialog-content > app-code > div > div:nth-child(3) > div > app-barcode > div > div');
-        // } catch (error) {
-        //     await page.click('#mat-dialog-2 > app-bar-code > div > div.mat-dialog-content > app-code > div > div:nth-child(3) > div > app-barcode');
-        // }
-
-
-        // await delay(3000)
-        // log(`[${date()}] Taking Screenshot & Saving to Image`);
-        // let text; 
-        // try {
-        //     const element = await page.$('#mat-dialog-1 > app-full-screen-code-dialog > div > div.flex-container > div > app-code > div');
-
-        //     const elements = await page.$("#mat-dialog-1 > app-full-screen-code-dialog > div > div.flex-container > div > app-code > div > div.code-wrapper > div > app-barcode > div > p");
-        //     text = await page.evaluate(element => element.textContent, elements);
-
-
-        //     await element.screenshot({ path: `./screenshot/${text}.png` });
-
-        // } catch (error) {
-        //     //#mat-dialog-3 > app-full-screen-code-dialog > div > div.flex-container > div > app-code > div > div.code-wrapper > div > app-barcode > div > p
-        //     const element = await page.$('#mat-dialog-3 > app-full-screen-code-dialog > div > div.flex-container > div > app-code > div');
-
-        //     const elements = await page.$("#mat-dialog-3 > app-full-screen-code-dialog > div > div.flex-container > div > app-code > div > div.code-wrapper > div > app-barcode > div > p");
-        //     text = await page.evaluate(element => element.textContent, elements);
-
-
-        //     await element.screenshot({ path: `./screenshot/${text}.png` });
-
-        // }
-        // //await page.waitForSelector('#mat-dialog-5 > app-full-screen-code-dialog > div > div.flex-container > div > app-code');
-        // log(`[${date()}] ${colors.green("Successfully Claimed " + text)}`);
         await browser.close();
         try {
             fs.rmSync(index, { recursive: true, force: true });
@@ -320,20 +250,9 @@ async function gas(email, password, index) {
     let numList = empassS.length;
     let thread = 5;
 
-    // console.log(empassS.splice(0, 1))
     for (let i = 0; i < Math.floor(numList / thread); i++) {
 
-        log(`[${date()}] ${colors.yellow(`Processing ${i + 1} of ${numList / thread} List`)}`);
-
-        // let email = empassS[i].split("|")[0];
-        // let pass = "AnjayMabar132";
-
-        // let result = await gas(email, pass, "1");
-        // if (result == true) {
-        //     deleteFirstIndex();
-        // } else {
-        //     return;
-        // }
+        log(`[${date()}] ${colors.yellow(`Processing ${i + 1} of ${Math.floor(numList / thread)} List`)}`);
 
         let spl = empassS.splice(0, thread);
 
@@ -354,21 +273,6 @@ async function gas(email, password, index) {
         });
 
         await Promise.all(promises);
-
-        // let email = empass[i].split("|")[0];
-        // // let pass = empass[i].split("|")[1];
-        // let pass = "AnjayMabar132";
-
-        // let result = await gas(email, pass);
-
-        // if (result == true) {
-        //     deleteFirstIndex();
-        // } else {
-        //     continue;
-        // }
-
-        // log();
-
 
     }
 
