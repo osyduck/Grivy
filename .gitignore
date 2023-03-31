@@ -1,8 +1,6 @@
-0/
-1/
-2/
-3/
-4/
+session/
 node_modules/
 code.txt
 empass.txt
+fail-empass.txt
+success-empass.txt

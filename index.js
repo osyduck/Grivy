@@ -4,8 +4,7 @@ puppeteer.use(StealthPlugin());
 const delay = require('delay');
 const fs = require('fs');
 const fetch = require('node-fetch');
-// const fetch = require('node-fetch');
-// const readline = require('readline-sync');
+const config = require('./config.json');
 
 const date = () => new Date().toLocaleTimeString({ timeZone: 'Asia/Jakarta' });
 const log = console.log;
@@ -44,7 +43,7 @@ async function claim(bearer) {
         method: 'POST'
     }).then(res => res.json());
 
-    console.log(gasken)
+    // console.log(gasken)
     const couponId = gasken.result.id;
 
     let claimData = JSON.stringify({ "data": { "coupon": { "id": `${couponId}`, "code": null, "status": "grabbed", "opened_expire_in": { "days": 7, "hours": 22, "minutes": 0, "seconds": 1 }, "claimed_expire_in": null, "claim_approved": null, "claim_approve_status": null, "claim_approval_message": null, "just_grabbed": true, "transacted_claim": null, "destination_url": null, "cashback_status": null, "cashback_amount": null, "cashback_status_change_at": null, "receipt_id": null }, "terms_conditions_01": true, "terms_conditions_02": false, "terms_conditions_03": false, "latitude": null, "longitude": null, "childBirthday": null, "userFirstName": null, "userLastName": null, "phonePopup": null, "recaptcha_token": null, "domain": "freshbreak_frestea" } });
@@ -65,17 +64,23 @@ async function claim(bearer) {
         method: 'POST'
     }).then(res => res.json());
 
-
-    console.log(gaskenCuy)
-
     if (gaskenCuy.error?.message == 'wrong_data') {
-        return "already_claimed"
+        return {
+            success: false,
+            message: 'already_claimed'
+        };
+    } else if(gaskenCuy.error?.message == 'no_available_coupons') {
+        return {
+            success: false,
+            message: 'no_available_coupons'
+        };
     } else {
         const code = gaskenCuy.result.code;
 
-        fs.appendFileSync('code.txt', code + "\n");
-
-        return code;
+        return {
+            success: true,
+            code
+        };
     }
 
 
@@ -83,7 +88,7 @@ async function claim(bearer) {
 
 async function gas(email, password, index) {
     try {
-        fs.rmSync(index, { recursive: true });
+        fs.rmSync(`session/${index}`, { recursive: true });
     } catch (error) {
         // console.log(error.message)
     }
@@ -95,7 +100,7 @@ async function gas(email, password, index) {
         }
         browser = await puppeteer.launch({
             headless: false,
-            userDataDir: index,
+            userDataDir: `session/${index}`,
             defaultViewport: null,
             args: [
                 '--disable-notifications',
@@ -110,12 +115,9 @@ async function gas(email, password, index) {
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36');
         await page.setGeolocation({ latitude: -6.589828, longitude: 110.6764994 });
-        //page.setViewport({ width: 1920, height: 1080 });
-
 
         await page.setRequestInterception(true);
         let bearer;
-        let campaign;
         page.on('request', request => {
             if (request.resourceType() == 'stylesheet' || request.resourceType() == 'font' || request.resourceType() == 'image') {
                 request.continue();
@@ -136,7 +138,6 @@ async function gas(email, password, index) {
             if (request.url().includes('cloudfunctions.net/getCampaign') && request.method() == "POST") {
                 const data = await response.json();
                 campaign = data;
-                // console.log(data)
             }
         });
 
@@ -182,7 +183,6 @@ async function gas(email, password, index) {
         await newPage.waitForSelector('input[type=password]', { visible: true });
         await newPage.type('input[type=password]', password);
 
-        //await newPage.waitForSelector('#passwordNext > div > button > div.VfPpkd-RLmnJb', { visible: true });
         await newPage.click('#passwordNext > div > button > div.VfPpkd-RLmnJb');
 
         try {
@@ -208,24 +208,36 @@ async function gas(email, password, index) {
 
         log(`[${date()}] Token: ${bearer}`);
 
-        claim(bearer);
+        const claimS = await claim(bearer);
+
         await browser.close();
         try {
-            fs.rmSync(index, { recursive: true, force: true });
+            fs.rmSync(`session/${index}`, { recursive: true, force: true });
         } catch (error) {
 
         }
-        return true;
+
+        if (claimS.success) {
+            log(`[${date()}] ${colors.green("Claim Success")}`);
+            log(`[${date()}] ${colors.green("Code: " + claimS.code)}`);
+            return claimS;
+        } else {
+            log(`[${date()}] ${colors.red("Claim Failed")}`);
+            log(`[${date()}] ${colors.red("Reason: " + claimS.message)}`);
+            return claimS;
+        }
     } catch (error) {
-        log(`[${date()}] ${colors.red(error.message)}`)
-        console.log(error)
+        log(`[${date()}] ${colors.red(error.message)}`);
         // await browser.close();
         try {
-            fs.rmSync(index, { recursive: true, force: true });
+            fs.rmSync(`session/${index}`, { recursive: true, force: true });
         } catch (error) {
 
         }
-        return false;
+        return {
+            success: false,
+            message: error.message
+        };
     }
 
 
@@ -239,7 +251,7 @@ async function gas(email, password, index) {
         accountList.shift();
         return fs.writeFileSync(empassPath, accountList.join("\n"), "utf-8");
     }
-    
+
     const writeSuccess = (accounts) => {
         const empassPath = "./success-empass.txt";
         return fs.writeFileSync(empassPath, accounts.join("\n"), "utf-8");
@@ -256,14 +268,14 @@ async function gas(email, password, index) {
     }
 
     console.clear();
-    log(colors.bgCyan("Coca Cola") + " " + colors.bgBlue("@osyduck"));
+    log(colors.bgCyan("Frestea") + " " + colors.bgBlue("@osyduck"));
     log();
 
-    let empass = fs.readFileSync("empass.txt", "utf-8");
+    let empass = fs.readFileSync(config.empass, "utf-8");
 
     let empassS = empass.split("\r\n");
     let numList = empassS.length;
-    let thread = 5;
+    let thread = config.thread;
     let result = [];
  
     for (let i = 0; i < Math.floor(numList / thread); i++) {
@@ -271,14 +283,15 @@ async function gas(email, password, index) {
 
         let spl = empassS.splice(0, thread);
 
-        console.log(spl)
+        // console.log(spl)
         let promises = spl.map(async (item, index) => {
             let email = item.split("|")[0];
-            let pass = "AnjayMabar132";
+            let pass = config.password;
 
             let result = await gas(email, pass, index.toString());
-
-            if (result == true) {
+            if (result.success == true) {
+                deleteFirstIndex();
+                fs.appendFileSync('code.txt', result.code + "\n");
                 return {
                     success: true,
                     email,
@@ -287,6 +300,7 @@ async function gas(email, password, index) {
                     index
                 };
             } else {
+                deleteFirstIndex();
                 return {
                     success: false,
                     email,
