@@ -5,3 +5,5 @@ empass.txt
 fail-empass.txt
 success-empass.txt
 build/
+barcode/
+ob.js

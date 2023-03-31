@@ -4,12 +4,30 @@ puppeteer.use(StealthPlugin());
 const delay = require('delay');
 const fs = require('fs');
 const fetch = require('node-fetch');
-const config = fs.readFileSync('config.json', 'utf-8');
+const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
 
 const date = () => new Date().toLocaleTimeString({ timeZone: 'Asia/Jakarta' });
 const log = console.log;
 const colors = require("colors");
+const bwipjs = require('bwip-js');
 
+function toBarcode(text) {
+    bwipjs.toBuffer({
+        bcid: 'code128',       // Barcode type
+        text: text,    // Text to encode
+        scale: 3,               // 3x scaling factor
+        height: 10,              // Bar height, in millimeters
+        includetext: true,            // Show human-readable text
+        textxalign: 'center',        // Always good to set this
+        padding: 10
+    }, function (err, png) {
+        if (err) {
+            // `err` may be a string or Error object
+        } else {
+            fs.writeFileSync(`barcode/${text}.png`, png);
+        }
+    });
+}
 
 async function claim(bearer) {
     let data = JSON.stringify({
@@ -220,6 +238,7 @@ async function gas(email, password, index) {
         if (claimS.success) {
             log(`[${date()}] ${colors.green("Claim Success")}`);
             log(`[${date()}] ${colors.green("Code: " + claimS.code)}`);
+            toBarcode(claimS.code);
             return claimS;
         } else {
             log(`[${date()}] ${colors.red("Claim Failed")}`);
@@ -245,6 +264,10 @@ async function gas(email, password, index) {
 };
 
 (async () => {
+    if (!fs.existsSync(`barcode`)){
+        fs.mkdirSync(`barcode`);
+    }
+
     const deleteFirstIndex = () => {
         let empassPath = "./empass.txt";
         let accountList = fs.readFileSync(empassPath, "utf-8").replace("\r").split("\n");
@@ -273,7 +296,7 @@ async function gas(email, password, index) {
 
     let empass = fs.readFileSync(config.empass, "utf-8");
 
-    let empassS = empass.split("\r\n");
+    let empassS = empass.split("\n");
     let numList = empassS.length;
     let thread = config.thread;
     let result = [];
