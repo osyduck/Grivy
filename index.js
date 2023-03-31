@@ -4,7 +4,7 @@ puppeteer.use(StealthPlugin());
 const delay = require('delay');
 const fs = require('fs');
 const fetch = require('node-fetch');
-const config = require('./config.json');
+const config = fs.readFileSync('config.json', 'utf-8');
 
 const date = () => new Date().toLocaleTimeString({ timeZone: 'Asia/Jakarta' });
 const log = console.log;

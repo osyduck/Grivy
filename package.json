@@ -4,6 +4,7 @@
       "delay": "^5.0.0",
       "puppeteer": "^18.2.1",
       "puppeteer-extra": "^3.3.4",
-      "puppeteer-extra-plugin-stealth": "^2.11.1"
+      "puppeteer-extra-plugin-stealth": "^2.11.1",
+      "node-fetch": "^2.6.7"
     }
   }
