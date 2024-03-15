@@ -1,6 +1,6 @@
 {
     "name": "grivy-auto-claimer",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Grivy Auto Claimer",
     "main": "index.js",
     "scripts": {
