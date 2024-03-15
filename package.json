@@ -1,4 +1,17 @@
 {
+    "name": "grivy-auto-claimer",
+    "version": "1.0.0",
+    "description": "Grivy Auto Claimer",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/osyduck/Grivy.git"
+    },
+    "author": "Janu Yoga",
+    "license": "ISC",
     "dependencies": {
         "bwip-js": "^3.3.0",
         "code-128-encoder": "^3.1.1",
